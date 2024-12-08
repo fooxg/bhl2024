@@ -67,7 +67,7 @@ AsyncWebServer server(80);
 WiFiServer TCPserver(SERVER_PORT);
 
 //init global variables
-Time stime = {21,37};
+Time stime = {21,38};
 UserData GuideData = {"Guide",64,1030,120,2,90,34};
 UserData GuestData1 = {"Adam",87,1040,117,3,92,30};
 UserData GuestData2 = {"Maciek",100,1027,90,4,87,26};
@@ -84,8 +84,8 @@ void init_networking() {
   Serial.print("AP IP address: ");
   Serial.println(IP);
 
-  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/plain", readTemp().c_str());
+  server.on("/getClientID", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/plain", assign_id().c_str());
   });
 
   server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -104,7 +104,7 @@ void init_networking() {
 }
 
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   Serial.println("ESP32 hand band");
   
@@ -120,7 +120,7 @@ void loop(){
   if (client) {
     // Read the command from the TCP client:
     char command = client.read();
-    Serial.println(command);
+    //Serial.println(command);
     client.stop();
   }
   //char key = customKeypad.getKey();
@@ -195,8 +195,9 @@ void keypadEvent(KeypadEvent key){
   }
 }
 
-String readTemp() {
-  return String("10C");
+String assign_id() {
+  static int i=0;
+  return String(i++);
 }
 
 String readHumi() {
