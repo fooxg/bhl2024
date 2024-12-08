@@ -104,7 +104,7 @@ void init_networking() {
 }
 
 void setup(){
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   Serial.println("ESP32 hand band");
   
@@ -115,6 +115,7 @@ void setup(){
 }
 
 void loop(){
+  char key = customKeypad.getKey();
   WiFiClient client = TCPserver.available();
 
   if (client) {
