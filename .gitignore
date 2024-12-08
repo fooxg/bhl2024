@@ -33,4 +33,5 @@
 
 # Ignore wifi creds
 src/dy404-client/creds.h
+src/dy404-client-sim/creds.h
 src/dy404-master/creds.h

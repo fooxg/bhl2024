@@ -32,13 +32,16 @@ typedef struct time{
 } Time;
 
 typedef struct userData{
+  uint8_t id;
   char name[16];
+  float temp;
+  float presure;
   uint8_t battery;
-  uint16_t presure;
-  uint16_t heart_rate;
-  uint8_t C02;
   uint8_t saturation;
   uint8_t humidity;
+  uint8_t heart_rate;
+  uint16_t C02;
+  uint32_t rtctime;
 } UserData;
 
 void draw_main_interface(Time, UserData);
@@ -67,12 +70,10 @@ AsyncWebServer server(80);
 WiFiServer TCPserver(SERVER_PORT);
 
 //init global variables
-Time stime = {21,38};
-UserData GuideData = {"Guide",64,1030,120,2,90,34};
-UserData GuestData1 = {"Adam",87,1040,117,3,92,30};
-UserData GuestData2 = {"Maciek",100,1027,90,4,87,26};
-UserData GuestData3 = {"Rafal",34,1065,99,1,94,15};
-UserData ActualData = GuideData;
+int choice=0;
+int max_c=0;
+UserData user_array[5];
+
 uint8_t sec = 0;
 uint8_t battery = 64;
 
@@ -112,23 +113,68 @@ void setup(){
 
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
   customKeypad.addEventListener(keypadEvent);
+  Serial.println("Setup complete");
 }
 
 void loop(){
   WiFiClient client = TCPserver.available();
 
   if (client) {
-    // Read the command from the TCP client:
-    char command = client.read();
-    //Serial.println(command);
+    uint8_t mess[35]; 
+    int len = client.read(mess, 35);
+    int id = mess[0];
+    if (id < max_c) {
+      user_array[id].id = mess[0];
+      for (int i{0}; i<16; i++)
+        user_array[id].name[i] = mess[1+i];
+
+      uint32_t temp;
+      temp = mess[20];
+      temp |= mess[19]<<8;
+      temp |= mess[18]<<16;
+      temp |= mess[17]<<24;
+      user_array[id].temp = ((float)temp);
+
+      temp = mess[24];
+      temp |= mess[23]<<8;
+      temp |= mess[22]<<16;
+      temp |= mess[21]<<24;
+      user_array[id].presure = ((float)temp);
+
+      user_array[id].battery = mess[25];
+
+      user_array[id].saturation = mess[26];
+
+      user_array[id].humidity = mess[27];
+
+      user_array[id].heart_rate = mess[28];
+
+      uint16_t CO2;
+      CO2 = mess[30];
+      CO2 |= mess[29];
+      user_array[id].C02 = CO2;
+      temp = mess[34];
+      temp |= mess[33]<<8;
+      temp |= mess[32]<<16;
+      temp |= mess[31]<<24;
+      user_array[id].rtctime = temp;
+    }
+    Serial.print(user_array[id].id);
+    Serial.print(" ");
+    Serial.print(id);
+    Serial.print(" ");
+    Serial.println(user_array[id].rtctime);
     client.stop();
   }
-  //char key = customKeypad.getKey();
-  draw_main_interface(stime,ActualData);
+  char key = customKeypad.getKey();
+  Time stime = {21, 37};
+  if (max_c > 0) {
+    draw_main_interface(stime, user_array[choice]);
+  }
 }
 
 // Handle drawing
-void draw_main_interface(Time time,UserData userData){
+void draw_main_interface(Time time, UserData userData){
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1);
@@ -162,7 +208,7 @@ void draw_main_interface(Time time,UserData userData){
   display.setTextSize(2);
   display.print(userData.saturation);
   display.setCursor(WIDTH-((int)log10(userData.presure)+1)*12, 20);
-  display.print(userData.presure);
+  display.print((int)userData.presure);
   display.setCursor(WIDTH/2-((int)log10(userData.heart_rate)+1)*12,MIDLINE+12);
   display.print(userData.heart_rate);
   display.setCursor(WIDTH-((int)log10(userData.C02)+1)*12, MIDLINE+12);
@@ -178,25 +224,31 @@ void keypadEvent(KeypadEvent key){
   if(customKeypad.getState() == PRESSED){
     switch (key){
     case '1':
-      ActualData = GuideData;
+      choice = 1;
       break;
     case '2':
-      ActualData = GuestData1;
+      choice = 2;
       break;
     case '3':
-      ActualData = GuestData2;
+      choice = 3;
       break;
     case '4':
-      ActualData = GuestData3;
+      choice = 4;
       break;
     default:
+      choice = 0;
       break;
     }
   }
+  if (choice >= max_c)
+    choice = max_c-1;
+  if (choice < 0)
+    choice = 0;
 }
 
 String assign_id() {
   static int i=0;
+  max_c = 214;
   return String(i++);
 }
 
