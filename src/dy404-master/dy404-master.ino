@@ -187,30 +187,30 @@ void draw_main_interface(Time time, UserData userData){
   display.print(userData.name);
   if(userData.battery < 100){
     display.setCursor(WIDTH-15-3, 0);
-    display.print(userData.battery);
+    display.print((int)(userData.battery/255.0*100));
     display.print("%");
   } else {
     display.setCursor(WIDTH-20-4, 0);
-    display.print(userData.battery);
+    display.print((int)(userData.battery/255.0*100));
     display.print("%");
   }
   //
   display.setCursor(0, 9);
   display.print("Saturation");
   display.setCursor(WIDTH/2+2, 9);
-  display.print("Presure");
+  display.print("Tmperature");
   display.setCursor(0,MIDLINE+1);
-  display.print("Heart rate");
+  display.print("Humidity");
   display.setCursor(WIDTH/2+2, MIDLINE+1);
   display.print("CO2");
 
   display.setCursor(WIDTH/2-((int)log10(userData.saturation)+1)*12, 20);
   display.setTextSize(2);
   display.print(userData.saturation);
-  display.setCursor(WIDTH-((int)log10(userData.presure)+1)*12, 20);
-  display.print((int)userData.presure);
-  display.setCursor(WIDTH/2-((int)log10(userData.heart_rate)+1)*12,MIDLINE+12);
-  display.print(userData.heart_rate);
+  display.setCursor(WIDTH-((int)log10(userData.temp)+1)*12, 20);
+  display.print((int)userData.temp);
+  display.setCursor(WIDTH/2-((int)log10(userData.humidity)+1)*12,MIDLINE+12);
+  display.print(userData.humidity);
   display.setCursor(WIDTH-((int)log10(userData.C02)+1)*12, MIDLINE+12);
   display.print(userData.C02);
 
