@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <DHT.h>
+#include <RtcDS1302.h>
 
 /* Only defines:
  * CREDS_SSID
@@ -23,8 +24,11 @@ const char* serverAddress = "192.168.4.1";
 const int   serverPort    = 4080;
 
 WiFiClient TCPclient;
-
-DHT dht(5,DHT11);
+#define DHTPIN 0
+#define DHTTYPE DHT11
+ThreeWire myWire(4,2,5); // IO, SCLK, CE
+RtcDS1302<ThreeWire> Rtc(myWire);
+DHT dht(DHTPIN, DHTTYPE);
 
 float temp;
 float humidity;
@@ -74,14 +78,15 @@ void log_to_blackbox(String text) {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   Serial.println("ESP8266 belt client");
   
   init_blackbox();
   init_network();
+  Rtc.Begin();
   dht.begin();
-
+  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
   Serial.println("Network stack initialised");
 }
 
@@ -102,6 +107,10 @@ void loop() {
   // Check connection
   if (!TCPclient.connected()) {
     Serial.println("Disconnected from host");
+        RtcDateTime now = Rtc.GetDateTime();
+Serial.println(dht.readTemperature());
+    printDateTime(now);
+    Serial.println();
     TCPclient.stop();
     // Log to blackbox only if cannot connect
     while (!TCPclient.connect(serverAddress, serverPort)) {
@@ -112,9 +121,28 @@ void loop() {
     Serial.println("Connection to host reestablished");
   }
 
+
   gather_sensors();
   log_to_blackbox("data");
   send_to_host();
 
   delay(500);
+}
+
+#define countof(a) (sizeof(a) / sizeof(a[0]))
+
+void printDateTime(const RtcDateTime& dt)
+{
+    char datestring[26];
+
+    snprintf_P(datestring, 
+            countof(datestring),
+            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            dt.Month(),
+            dt.Day(),
+            dt.Year(),
+            dt.Hour(),
+            dt.Minute(),
+            dt.Second() );
+    Serial.print(datestring);
 }
