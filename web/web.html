@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard użytkowników</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .user-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            width: 200px;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-card.alert {
+            border-color: red;
+            background-color: #ffcccc;
+        }
+
+        .user-details {
+            display: none;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-details p {
+            margin: 5px 0;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lista użytkowników</h1>
+    </header>
+    <div class="container" id="userList"></div>
+    <div class="user-details" id="userDetails"></div>
+
+    <script>
+        // Przykładowe dane użytkowników
+        const users = [
+            {
+                id: 1,
+                name: "Jan Kowalski",
+                heartRate: 75,
+                humidity: 50,
+                temperature: 36.6,
+                battery: 95,
+                pressure: 120,
+                oxygen: 98,
+                co2: 0.04,
+            },
+            {
+                id: 2,
+                name: "Anna Nowak",
+                heartRate: 61,
+                humidity: 31,
+                temperature: 27,
+                battery: 40,
+                pressure: 1030,
+                oxygen: 92,
+                co2: 0.06,
+            },
+            {
+                id: 3,
+                name: "Piotr Wiśniewski",
+                heartRate: 120,
+                humidity: 20,
+                temperature: 21,
+                battery: 31,
+                pressure: 900,
+                oxygen: 91,
+                co2: 0.04,
+            },
+        ];
+
+        const thresholds = {
+            heartRate: [60, 160],
+            humidity: [0, 70],
+            temperature: [20, 30],
+            battery: [30, 100],
+            pressure: [900, 1040],
+            oxygen: [90, 100],
+            co2: [0, 0.08],
+        };
+
+        const userList = document.getElementById("userList");
+        const userDetails = document.getElementById("userDetails");
+
+        function checkAlerts(user) {
+            return (
+                user.heartRate < thresholds.heartRate[0] || user.heartRate > thresholds.heartRate[1] ||
+                user.humidity < thresholds.humidity[0] || user.humidity > thresholds.humidity[1] ||
+                user.temperature < thresholds.temperature[0] || user.temperature > thresholds.temperature[1] ||
+                user.battery < thresholds.battery[0] || user.battery > thresholds.battery[1] ||
+                user.pressure < thresholds.pressure[0] || user.pressure > thresholds.pressure[1] ||
+                user.oxygen < thresholds.oxygen[0] || user.oxygen > thresholds.oxygen[1] ||
+                user.co2 > thresholds.co2[1]
+            );
+        }
+
+        function renderUsers() {
+            userList.innerHTML = "";
+            users.forEach(user => {
+                const userCard = document.createElement("div");
+                userCard.classList.add("user-card");
+                if (checkAlerts(user)) {
+                    userCard.classList.add("alert");
+                }
+                userCard.textContent = user.name;
+                userCard.addEventListener("click", () => showUserDetails(user));
+                userList.appendChild(userCard);
+            });
+        }
+
+        function showUserDetails(user) {
+            userDetails.innerHTML = `
+                <h2>${user.name}</h2>
+                <p>Tętno: ${user.heartRate} bpm</p>
+                <p>Wilgotność: ${user.humidity}%</p>
+                <p>Temperatura: ${user.temperature} °C</p>
+                <p>Stan baterii: ${user.battery}%</p>
+                <p>Ciśnienie: ${user.pressure} mmHg</p>
+                <p>Saturacja krwi: ${user.oxygen}%</p>
+                <p>Zawartość CO2: ${user.co2}%</p>
+            `;
+            userDetails.style.display = "block";
+        }
+
+        renderUsers();
+    </script>
+</body>
+</html>
