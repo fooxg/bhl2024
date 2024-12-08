@@ -1,6 +1,13 @@
+/*
+ * Dywizjon 404
+ * Adam G., Maciej K., Rafal L.
+ * ESP8266 client for monitoring life support
+ */
+
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <SD.h>
+#include <DHT.h>
 
 /* Only defines:
  * CREDS_SSID
@@ -16,6 +23,11 @@ const char* serverAddress = "192.168.4.1";
 const int   serverPort    = 4080;
 
 WiFiClient TCPclient;
+
+DHT dht(5,DHT11);
+
+float temp;
+float humidity;
 
 void init_network() {
   // connect to Wi-Fi
@@ -51,6 +63,7 @@ void init_blackbox() {
 
 void log_to_blackbox(String text) {
   // SD handling
+  // TODO RTC
   File dataFile = SD.open("client_log", FILE_WRITE);
   if (dataFile) {
     dataFile.println(text);
@@ -67,6 +80,7 @@ void setup() {
   
   init_blackbox();
   init_network();
+  dht.begin();
 
   Serial.println("Network stack initialised");
 }
@@ -74,6 +88,8 @@ void setup() {
 void gather_sensors() {
   // TODO
   // all sensor data here
+  temp = dht.readTemperature();
+  humidity = dht.readHumidity();
 }
 
 void send_to_host() {

@@ -1,2 +1,2 @@
 # bhl2024
-BHL project for team dywizjon 404
+BHL hackaton project for team dywizjon 404 developed during 24h period. Our project is meant as an extension for smart space suit for space tourists and guides that supervise them. Codebse is divided in two parts - one universal for every crew member as client part, and one - master - data gathering unit which collects data from crew, displays it to guide and alert in case of critical condition. Additionally it handles sending data to remote space station which can be notified in case of emergency to act far quicker than normally possible.
